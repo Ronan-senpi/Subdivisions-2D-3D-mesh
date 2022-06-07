@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class MathTools
 {
-    public static List<Triangle> ConvertMesh(Mesh mesh)
+    public static MeshObject ConvertMesh(Mesh mesh)
     {
         int triangleCount = mesh.triangles.Length / 3;
         List<Triangle> triangles = new List<Triangle>();
@@ -18,6 +18,6 @@ public static class MathTools
                 new Edge(p3, p1)));
         }
 
-        return triangles;
+        return new MeshObject(triangles);
     }
 }
