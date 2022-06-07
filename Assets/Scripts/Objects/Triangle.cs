@@ -74,6 +74,25 @@ namespace Objects
                     edges[2].firstPoint.Position.z)
             };
         }
+        public List<Point> GetPoints()
+        {
+            return new List<Point>
+            {
+                edges[0].firstPoint,
+                edges[1].firstPoint,
+                edges[2].firstPoint
+            };
+        }
+
+        public List<Edge> GetEdges()
+        {
+            return new List<Edge>
+            {
+                edges[0],
+                edges[1],
+                edges[2]
+            };
+        }
 
         public Point GetLastVertex(Edge edge)
         {
