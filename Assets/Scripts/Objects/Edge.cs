@@ -13,6 +13,8 @@ namespace Objects
         public Point firstPoint => points[0];
         public Point secondPoint => points[1];
 
+        public Point EdgePoint { get; private set; }
+
         public Edge()
         {
             points[0] = new Point();
@@ -77,6 +79,26 @@ namespace Objects
             return new Tuple<int, int>(index[0], index[1]);
         }
 
+        public Tuple<int, int> BelongsToFaces(List<Face> faces)
+        {
+            int foundFaces = 0;
+            int[] index = new int[2] { -1, -1 };
+
+            for (int i = 0; i < faces.Count; i++)
+            {
+                if (faces[i].Contains(this))
+                {
+                    index[foundFaces] = i;
+                    foundFaces++;
+                }
+
+                if (foundFaces >= 2)
+                    break;
+            }
+
+            return new Tuple<int, int>(index[0], index[1]);
+        }
+
         public void DisplayEdge(ref LineRenderer lr, int indexLr)
         {
             lr.SetPosition(indexLr, points[0].Position);
@@ -98,6 +120,19 @@ namespace Objects
         public Edge Reverse()
         {
             return new Edge(this.secondPoint, this.firstPoint);
+        }
+
+        public void ComputeEdgePoint(Point facePointA, Point facePointB)
+        {
+            EdgePoint = new Point((points[0].Position + points[1].Position + facePointA.Position + facePointB.Position) / 4);
+        }
+
+        public bool Contains(Point point)
+        {
+            if (point == firstPoint || point == secondPoint)
+                return true;
+            
+            return false;
         }
     }
 }
