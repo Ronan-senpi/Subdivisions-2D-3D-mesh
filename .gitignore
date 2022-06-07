@@ -60,3 +60,5 @@ sysinfo.txt
 crashlytics-build.properties
 
 .idea/
+ProjectSettings/RiderScriptEditorPersistedState.asset
+ProjectSettings/Packages/com.unity.testtools.codecoverage/Settings.json
