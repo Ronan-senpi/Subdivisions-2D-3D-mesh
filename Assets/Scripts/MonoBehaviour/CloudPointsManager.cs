@@ -64,7 +64,7 @@ public class CloudPointsManager : MonoBehaviour
 
        // Debug.DrawLine(barycenter.Position, currentPoint.Position,Color.green);
     }
-
+    
     public void GenerateCloudsPoints()
     {
         for (int i = 0; i < container.childCount; i++)

@@ -32,4 +32,15 @@ public class GenerateByClick : MonoBehaviour
         Instantiate(pointPrefab, mousePos, Quaternion.identity, transform);
         points.Add(new Point(mousePos));
     }
+
+    public Vector3[] GetPositions()
+    {
+        Vector3[] positions = new Vector3[points.Count];
+        for (int i = 0; i < points.Count; i++)
+        {
+            positions[i] = points[i].Position;
+        }
+
+        return positions;
+    }
 }
