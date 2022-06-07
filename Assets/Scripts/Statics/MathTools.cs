@@ -24,7 +24,7 @@ public static class MathTools
                 new Edge(p3, p1)));
         }
 
-        return triangles;
+        return new MeshObject(triangles);
     }
     public static List<Edge> GetEdges(List<Triangle> triangles)
     {

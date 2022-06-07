@@ -12,7 +12,7 @@ public class LoopSolver : MonoBehaviour
 
     private void Start()
     {
-        List<Triangle> triangles = MathTools.ConvertMesh(mf.mesh);
+        List<Triangle> triangles = MathTools.ConvertMesh(mf.mesh).Triangles;
     }
 
 }
