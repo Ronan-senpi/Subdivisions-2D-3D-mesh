@@ -10,6 +10,7 @@ namespace Objects
     {
         public Vector3 Position;
         public GameObject Go;
+        public int index;
 
         public Point()
         {
@@ -18,6 +19,12 @@ namespace Objects
         public Point(Vector3 pos)
         {
             this.Position = pos;
+        }
+
+        public Point(Vector3 pos, int index)
+        {
+            this.Position = pos;
+            this.index = index;
         }
 
         public Point(GameObject go, Vector3 pos)

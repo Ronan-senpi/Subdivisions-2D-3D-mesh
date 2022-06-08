@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Objects
 {
@@ -13,6 +14,12 @@ namespace Objects
         {
             Triangles = tris;
         }
+        public MeshObject(List<Triangle> tris, Vector3[] verts)
+        {
+            Triangles = tris;
+            Vertices = verts;
+        }
         public List<Triangle> Triangles { get; set; }
+        public Vector3[] Vertices { get; set; }
     }
 }

@@ -99,5 +99,18 @@ namespace Objects
         {
             return new Edge(this.secondPoint, this.firstPoint);
         }
+
+        /// <summary>
+        /// Returns the indices of the two points, in ascending order
+        /// </summary>
+        /// <returns>a tuple containing the two indices</returns>
+        public (int, int) getIndices()
+        {
+            int i1 = points[0].index;
+            int i2 = points[1].index;
+            
+            if (i1 > i2) return (i2, i1);
+            return (i1, i2);
+        }
     }
 }
