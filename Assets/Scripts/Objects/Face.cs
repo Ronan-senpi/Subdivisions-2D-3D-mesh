@@ -55,5 +55,28 @@ namespace Objects
 
             return false;
         }
+
+        public bool CompareFaces(Face otherFace)
+        {
+            int compareCount = 0;
+            foreach (Edge e in Edges)
+            {
+                foreach (Edge otherE in otherFace.Edges)
+                {
+                    if (e.CompareEdge(otherE))
+                    {
+                        compareCount++;
+                        break;
+                    }
+                }
+            }
+
+            if (compareCount == Edges.Count)
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }

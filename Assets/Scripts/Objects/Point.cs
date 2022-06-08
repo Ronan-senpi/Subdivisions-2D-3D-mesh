@@ -14,6 +14,9 @@ namespace Objects
 
         public Point VertexPoint { get; private set; }
 
+        public List<Edge> edgeParents = new List<Edge>();
+        public List<Face> faceParents = new List<Face>();
+
         public Point()
         {
         }
@@ -53,23 +56,22 @@ namespace Objects
                 throw new ArgumentException("Object is not a Point");
         }
 
-        public void ComputeVertexPoint(List<Point> facePoints, List<Point> edgePoints)
+        public void ComputeVertexPoint()
         {
-            int n = edgePoints.Count;
+            int n = edgeParents.Count;
 
             Vector3 v = Vector3.zero;
             Vector3 q = Vector3.zero;
             Vector3 r = Vector3.zero;
-            foreach (Point p in facePoints)
-                q += p.Position;
+            foreach (Face f in faceParents)
+                q += f.FacePoints.Position;
 
 
-            foreach (Point p in edgePoints)
-                r += p.Position;
+            foreach (Edge e in edgeParents)
+                r += e.EdgePoint.Position;
 
-
-            q /= facePoints.Count;
-            r /= edgePoints.Count;
+            q /= faceParents.Count;
+            r /= edgeParents.Count;
 
             v = q / n + (2 * r) / n;
             VertexPoint = new Point(v);

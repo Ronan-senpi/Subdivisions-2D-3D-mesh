@@ -15,16 +15,30 @@ namespace Objects
 
         public Point EdgePoint { get; private set; }
 
+        public List<Face> faceParents = new List<Face>();
+
         public Edge()
         {
             points[0] = new Point();
             points[1] = new Point();
+            EdgePoint = null;
+            points[0].edgeParents.Add(this);
+            points[0].faceParents = this.faceParents;
+            points[1].edgeParents.Add(this);
+            points[1].faceParents = this.faceParents;
         }
 
         public Edge(Point a, Point b)
         {
             points[0] = a;
             points[1] = b;
+            points[0].edgeParents.Add(this);
+            points[0].faceParents = this.faceParents;
+            points[1].edgeParents.Add(this);
+            points[1].faceParents = this.faceParents;
+
+
+            EdgePoint = null;
         }
 
         public Edge(List<Point> newPoints)
@@ -32,6 +46,12 @@ namespace Objects
             if (newPoints == null || newPoints.Count < 2) return;
             points[0] = newPoints[0];
             points[1] = newPoints[1];
+            points[0].edgeParents.Add(this);
+            points[0].faceParents = this.faceParents;
+            points[1].edgeParents.Add(this);
+            points[1].faceParents = this.faceParents;
+
+            EdgePoint = null;
         }
 
         [CanBeNull]
@@ -79,24 +99,20 @@ namespace Objects
             return new Tuple<int, int>(index[0], index[1]);
         }
 
-        public Tuple<int, int> BelongsToFaces(List<Face> faces)
+        public int BelongsToFace(List<Face> faces)
         {
-            int foundFaces = 0;
-            int[] index = new int[2] { -1, -1 };
+            int index = -1;
 
             for (int i = 0; i < faces.Count; i++)
             {
                 if (faces[i].Contains(this))
                 {
-                    index[foundFaces] = i;
-                    foundFaces++;
-                }
-
-                if (foundFaces >= 2)
+                    index = i;
                     break;
+                }
             }
 
-            return new Tuple<int, int>(index[0], index[1]);
+            return index;
         }
 
         public void DisplayEdge(ref LineRenderer lr, int indexLr)
@@ -105,34 +121,32 @@ namespace Objects
             lr.SetPosition(indexLr + 1, points[1].Position);
         }
 
-        public static bool operator ==(Edge a, Edge b)
-        {
-            return (a.firstPoint == b.firstPoint && a.secondPoint == b.secondPoint) ||
-                   (a.firstPoint == b.secondPoint && a.secondPoint == b.firstPoint);
-        }
-
-
-        public static bool operator !=(Edge a, Edge b)
-        {
-            return !(a == b);
-        }
-
         public Edge Reverse()
         {
             return new Edge(this.secondPoint, this.firstPoint);
         }
 
-        public void ComputeEdgePoint(Point facePointA, Point facePointB)
+        public void ComputeEdgePoint()
         {
-            EdgePoint = new Point((points[0].Position + points[1].Position + facePointA.Position + facePointB.Position) / 4);
+            Debug.Log(faceParents.Count);
+            EdgePoint = new Point((points[0].Position + points[1].Position + faceParents[0].FacePoints.Position +
+                                   faceParents[1].FacePoints.Position) / 4);
         }
 
         public bool Contains(Point point)
         {
             if (point == firstPoint || point == secondPoint)
                 return true;
-            
+
             return false;
+        }
+
+        public bool CompareEdge(Edge b)
+        {
+            return (this.firstPoint.Position == b.firstPoint.Position &&
+                    this.secondPoint.Position == b.secondPoint.Position) ||
+                   (this.firstPoint.Position == b.secondPoint.Position &&
+                    this.secondPoint.Position == b.firstPoint.Position);
         }
     }
 }
