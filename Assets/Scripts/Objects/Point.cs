@@ -14,9 +14,6 @@ namespace Objects
 
         public Point VertexPoint { get; private set; }
 
-        public List<Edge> edgeParents = new List<Edge>();
-        public List<Face> faceParents = new List<Face>();
-
         public Point()
         {
         }
@@ -56,10 +53,10 @@ namespace Objects
                 throw new ArgumentException("Object is not a Point");
         }
 
-        public void ComputeVertexPoint()
+        public void ComputeVertexPoint(List<Face> faceParents, List<Edge> edgeParents)
         {
-            int n = edgeParents.Count;
-
+            Debug.Log("Edge count : " + edgeParents.Count);
+            Debug.Log("Face count : " + faceParents.Count);
             Vector3 v = Vector3.zero;
             Vector3 q = Vector3.zero;
             Vector3 r = Vector3.zero;
@@ -68,39 +65,42 @@ namespace Objects
 
 
             foreach (Edge e in edgeParents)
-                r += e.EdgePoint.Position;
+                r += (e.firstPoint.Position + e.secondPoint.Position) / 2;
 
             q /= faceParents.Count;
             r /= edgeParents.Count;
 
-            v = q / n + (2 * r) / n;
+            v = (q / edgeParents.Count) + ((2 * r) / edgeParents.Count) +
+                ((edgeParents.Count - 3) * this.Position) / edgeParents.Count;
             VertexPoint = new Point(v);
         }
 
-        public List<int> BelongsToFaces(List<Face> faces)
+        public List<Face> BelongsToFaces(List<Face> faces)
         {
-            List<int> indexes = new List<int>();
+            List<Face> belongedFaces = new List<Face>();
             for (int i = 0; i < faces.Count; i++)
             {
                 if (faces[i].Contains(this))
                 {
-                    indexes.Add(i);
+                    belongedFaces.Add(faces[i]);
                 }
             }
 
-            return indexes;
+            return belongedFaces;
         }
 
-        public List<int> BelongsToEdges(List<Edge> edges)
+        public List<Edge> BelongsToEdges(List<Edge> edges)
         {
-            List<int> indexes = new List<int>();
+            List<Edge> belongedEdges = new List<Edge>();
             for (int i = 0; i < edges.Count; i++)
             {
                 if (edges[i].Contains(this))
-                    indexes.Add(i);
+                {
+                    belongedEdges.Add(edges[i]);
+                }
             }
 
-            return indexes;
+            return belongedEdges;
         }
     }
 }

@@ -15,29 +15,17 @@ namespace Objects
 
         public Point EdgePoint { get; private set; }
 
-        public List<Face> faceParents = new List<Face>();
-
         public Edge()
         {
             points[0] = new Point();
             points[1] = new Point();
             EdgePoint = null;
-            points[0].edgeParents.Add(this);
-            points[0].faceParents = this.faceParents;
-            points[1].edgeParents.Add(this);
-            points[1].faceParents = this.faceParents;
         }
 
         public Edge(Point a, Point b)
         {
             points[0] = a;
             points[1] = b;
-            points[0].edgeParents.Add(this);
-            points[0].faceParents = this.faceParents;
-            points[1].edgeParents.Add(this);
-            points[1].faceParents = this.faceParents;
-
-
             EdgePoint = null;
         }
 
@@ -46,11 +34,6 @@ namespace Objects
             if (newPoints == null || newPoints.Count < 2) return;
             points[0] = newPoints[0];
             points[1] = newPoints[1];
-            points[0].edgeParents.Add(this);
-            points[0].faceParents = this.faceParents;
-            points[1].edgeParents.Add(this);
-            points[1].faceParents = this.faceParents;
-
             EdgePoint = null;
         }
 
@@ -99,20 +82,18 @@ namespace Objects
             return new Tuple<int, int>(index[0], index[1]);
         }
 
-        public int BelongsToFace(List<Face> faces)
+        public List<Face> BelongsToFaces(List<Face> faces)
         {
-            int index = -1;
-
+            List<Face> belongedFaces = new List<Face>();
             for (int i = 0; i < faces.Count; i++)
             {
                 if (faces[i].Contains(this))
                 {
-                    index = i;
-                    break;
+                    belongedFaces.Add(faces[i]);
                 }
             }
 
-            return index;
+            return belongedFaces;
         }
 
         public void DisplayEdge(ref LineRenderer lr, int indexLr)
@@ -126,16 +107,21 @@ namespace Objects
             return new Edge(this.secondPoint, this.firstPoint);
         }
 
-        public void ComputeEdgePoint()
+        public void ComputeEdgePoint(List<Face> faceParents) 
         {
-            Debug.Log(faceParents.Count);
-            EdgePoint = new Point((points[0].Position + points[1].Position + faceParents[0].FacePoints.Position +
-                                   faceParents[1].FacePoints.Position) / 4);
+            Vector3 position = Vector3.zero;
+            position += points[0].Position + points[1].Position;
+            foreach (Face f in faceParents)
+            {
+                position += f.FacePoints.Position;
+            }
+
+            EdgePoint = new Point(position / (2 + faceParents.Count));
         }
 
         public bool Contains(Point point)
         {
-            if (point == firstPoint || point == secondPoint)
+            if (point.Position == firstPoint.Position || point.Position == secondPoint.Position)
                 return true;
 
             return false;

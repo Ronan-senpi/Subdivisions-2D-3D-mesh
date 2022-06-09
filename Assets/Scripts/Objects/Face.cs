@@ -34,7 +34,7 @@ namespace Objects
         {
             foreach (Edge edge in Edges)
             {
-                if (edge == edgeContained)
+                if (edge.CompareEdge(edgeContained))
                 {
                     return true;
                 }
@@ -47,7 +47,7 @@ namespace Objects
         {
             foreach (Edge edge in Edges)
             {
-                if (edge.firstPoint == pointContained || edge.secondPoint == pointContained)
+                if (edge.firstPoint.Position == pointContained.Position || edge.secondPoint.Position == pointContained.Position)
                 {
                     return true;
                 }
