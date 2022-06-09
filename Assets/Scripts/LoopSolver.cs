@@ -44,14 +44,18 @@ public class LoopSolver : MonoBehaviour
         List<(int, int, int)> tupledTriangle = ConvertTrianglesToTuple(meshTriangles);
         List<Vector3> finalPositions;
         List<int> finalIndices;
-        RecreateCreateMesh(out finalPositions,out finalIndices, edgePoints,newVertices,tupledTriangle);
+        List<Vector3> finalNormals;
+        RecreateCreateMesh(out finalPositions,out finalIndices, out finalNormals, edgePoints,newVertices,tupledTriangle);
         mf.mesh.vertices = finalPositions.ToArray();
         mf.mesh.triangles = finalIndices.ToArray();
+        //mf.mesh.normals = finalNormals.ToArray();
     }
-    private void RecreateCreateMesh(out List<Vector3> finalPositions,out List<int> finalIndices, Dictionary<(int, int), Vector3> edgePoints, Vector3[] newVertices, List<(int, int, int)> tupledTriangle)
+    
+    private void RecreateCreateMesh(out List<Vector3> finalPositions,out List<int> finalIndices, out List<Vector3> finalNormals, Dictionary<(int, int), Vector3> edgePoints, Vector3[] newVertices, List<(int, int, int)> tupledTriangle)
     {
         finalPositions = new List<Vector3>(newVertices);
         finalIndices = new List<int>();
+        finalNormals = new List<Vector3>();
         foreach (var triangle in tupledTriangle)
         {
             int count = finalPositions.Count;//the previous amount of positions;
@@ -69,22 +73,31 @@ public class LoopSolver : MonoBehaviour
             finalPositions.Add(BC);// + 4
             finalPositions.Add(CA);// + 5
             
+            Vector3 n = Vector3.zero;
             //First tri A AB CA
             finalIndices.Add(count+0);
             finalIndices.Add(count+3);
             finalIndices.Add(count+5);
+            n = Vector3.Cross((AB-A),CA-A).normalized;
+            finalNormals.Add(n);
             //Second tri CA BC C
             finalIndices.Add(count+5);
             finalIndices.Add(count+4);
             finalIndices.Add(count+2);
+            n = Vector3.Cross((BC-CA),C-CA).normalized;
+            finalNormals.Add(n);
             //Third tri AB B BC
             finalIndices.Add(count+3);
             finalIndices.Add(count+1);
             finalIndices.Add(count+4);
+            n = Vector3.Cross((B-AB),BC-AB).normalized;
+            finalNormals.Add(n);
             //Fourth tri AB BC CA
             finalIndices.Add(count+3);
             finalIndices.Add(count+4);
             finalIndices.Add(count+5);
+            n = Vector3.Cross((BC-AB),CA-AB).normalized;
+            finalNormals.Add(n);
         }
     }
 
