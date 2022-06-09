@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Objects;
 using UnityEngine;
 
@@ -19,7 +20,7 @@ public static class MathTools
             Point p1 = new Point(mesh.vertices[id1],id1);
             int id2 = mesh.triangles[i+1];
             Point p2 = new Point(mesh.vertices[id2],id2);
-            int id3 = mesh.triangles[i+3];
+            int id3 = mesh.triangles[i+2];
             Point p3 = new Point(mesh.vertices[id3],id3);
             triangles.Add(new Triangle(
                 new Edge(p1, p2),
@@ -36,10 +37,12 @@ public static class MathTools
         {
             Triangle t = triangles[i];
             List<Edge> triangleEdges = t.GetEdges();
-            if(!edges.Contains(triangleEdges[0])) edges.Add(triangleEdges[0]);
-            if(!edges.Contains(triangleEdges[1])) edges.Add(triangleEdges[1]);
-            if(!edges.Contains(triangleEdges[2])) edges.Add(triangleEdges[2]);
+            int edgeCount = edges.Count;
+            edges.Add(triangleEdges[0]);
+            edges.Add(triangleEdges[1]);
+            edges.Add(triangleEdges[2]);
         }
+
         return edges;
     }
     public static List<Point> GetPoints(List<Triangle> triangles)

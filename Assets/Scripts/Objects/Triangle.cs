@@ -53,7 +53,7 @@ namespace Objects
         {
             foreach (Edge edge in edges)
             {
-                if (edge == edgeContained)
+                if (edge.CompareEdge(edgeContained))
                 {
                     return true;
                 }

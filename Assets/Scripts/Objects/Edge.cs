@@ -143,10 +143,10 @@ namespace Objects
 
         public bool CompareEdge(Edge b)
         {
-            return (this.firstPoint.Position == b.firstPoint.Position &&
-                    this.secondPoint.Position == b.secondPoint.Position) ||
-                   (this.firstPoint.Position == b.secondPoint.Position &&
-                    this.secondPoint.Position == b.firstPoint.Position);
+            return (Mathf.Abs((this.firstPoint.Position - b.firstPoint.Position).magnitude) < 0.001f &&
+                    Mathf.Abs((this.secondPoint.Position - b.secondPoint.Position).magnitude) < 0.001f) ||
+                   (Mathf.Abs((this.firstPoint.Position - b.secondPoint.Position).magnitude) < 0.001f &&
+                    Mathf.Abs((this.secondPoint.Position - b.firstPoint.Position).magnitude) < 0.001f);
         }
 
         /// <summary>
