@@ -98,6 +98,25 @@ namespace Objects
 
             return new Tuple<int, int>(index[0], index[1]);
         }
+        public Tuple<int, int> BelongsToTriangles(List<Triangle> triangles, int vertexExcluded)
+        {
+            int foundTriangle = 0;
+            int[] index = new int[2] { -1, -1 };
+
+            for (int i = 0; i < triangles.Count; i++)
+            {
+                if (triangles[i].Contains(this) && triangles[i].Contains(this))
+                {
+                    index[foundTriangle] = i;
+                    foundTriangle++;
+                }
+
+                if (foundTriangle >= 2)
+                    break;
+            }
+
+            return new Tuple<int, int>(index[0], index[1]);
+        }
 
         public int BelongsToFace(List<Face> faces)
         {
