@@ -13,11 +13,11 @@ public static class MathTools
             Point p1 = new Point(mesh.vertices[i + 0]);
             Point p2 = new Point(mesh.vertices[i + 1]);
             Point p3 = new Point(mesh.vertices[i + 2]);
-            triangles.Add(new Triangle(new Edge(p1, p2),
+            triangles.Add(new Triangle(
+                new Edge(p1, p2),
                 new Edge(p2, p3),
                 new Edge(p3, p1)));
         }
-
         return new MeshObject(triangles);
     }
 }

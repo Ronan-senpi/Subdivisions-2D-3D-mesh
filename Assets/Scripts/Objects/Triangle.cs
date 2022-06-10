@@ -9,15 +9,33 @@ namespace Objects
     public class Triangle
     {
         private Edge[] edges = new Edge[3];
-
+    
         public Edge[] Edges
         {
             get { return edges; }
             set { edges = value; }
         }
 
-        private Vector3 centerCircle;
-        public Vector3 Center => centerCircle;
+        public Vector3 CenterCircle { get; private set; }
+
+        public Vector3 Center
+        {
+            get
+            {
+                Vector3[] ps = GetPoints();
+
+                return (ps[0] + ps[1] + ps[2]) / 3;
+            }
+        }
+
+        public Vector3[] GetPoints()
+        {
+            
+            Vector3 A = edges[0].firstPoint.Position;
+            Vector3 B = edges[0].secondPoint.Position;
+            Vector3 C = edges[1].secondPoint.Position;
+            return new [] { A, B, C };
+        }
         private float rCircle;
         public float Ray => rCircle;
 
@@ -48,7 +66,7 @@ namespace Objects
             lr.SetPosition(1, edges[1].firstPoint.Position);
             lr.SetPosition(2, edges[2].firstPoint.Position);
         }
-
+        
         public bool Contains(Edge edgeContained)
         {
             foreach (Edge edge in edges)
@@ -121,14 +139,14 @@ namespace Objects
             float gamma = Mathf.Pow((A - B).magnitude, 2) * Vector3.Dot((C - A), C - B)
                           / (2 * Mathf.Pow(Vector3.Cross((A - B), (B - C)).magnitude, 2));
 
-            centerCircle = alpha * A + beta * B + gamma * C;
+            CenterCircle = alpha * A + beta * B + gamma * C;
         }
 
         public bool VerifyDelaunayCriteria(Vector3 pointTriangulation)
         {
             CreateCircumcircle();
             List<Vector3> trianglePoint = GetVertex();
-            if ((pointTriangulation - centerCircle).magnitude < rCircle)
+            if ((pointTriangulation - CenterCircle).magnitude < rCircle)
             {
                 return false;
             }
