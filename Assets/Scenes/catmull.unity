@@ -545,7 +545,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
-  orthographic: 0
+  orthographic: 1
   orthographic size: 5
   m_Depth: -1
   m_CullingMask:
@@ -570,7 +570,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 774638952}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 5, y: 1, z: -4.66}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -606,8 +606,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d602f956eeaed8b449c5ccfd41846571, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  meshFilter: {fileID: 1442682836}
-  point: {fileID: 8233327308343019187, guid: 239d981f6333ae84bab4d2c2a62075c2, type: 3}
+  go: {fileID: 1442682835}
+  mat: {fileID: 2100000, guid: 7a0d5d95feba5524588036bde583fa23, type: 2}
 --- !u!4 &996484369
 Transform:
   m_ObjectHideFlags: 0

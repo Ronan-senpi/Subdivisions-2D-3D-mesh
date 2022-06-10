@@ -8,13 +8,26 @@ namespace Objects
 {
     public class Face
     {
-        public List<Edge> Edges { get; private set; }
+        private Edge[] edges = new Edge[3];
+
+        public Edge[] Edges
+        {
+            get { return edges; }
+            private set { edges = value; }
+        }
 
         public Point FacePoints { get; private set; }
 
+        public Face()
+        {
+            Edges[0] = new Edge();
+            Edges[1] = new Edge();
+            Edges[2] = new Edge();
+        }
+
         public Face(List<Edge> newEdges)
         {
-            Edges = newEdges;
+            Edges = newEdges.ToArray();
         }
 
 
@@ -28,7 +41,7 @@ namespace Objects
             foreach (Edge edge in Edges)
                 centroid += edge.firstPoint.Position;
 
-            FacePoints = new Point(centroid /= Edges.Count);
+            FacePoints = new Point(centroid /= Edges.Length);
         }
 
         /// <summary>
@@ -88,7 +101,7 @@ namespace Objects
                 }
             }
 
-            if (compareCount == Edges.Count)
+            if (compareCount == Edges.Length)
             {
                 return true;
             }
@@ -110,6 +123,46 @@ namespace Objects
 
             points = points.GroupBy(x => x).Select(x => x.First()).ToList();
             return (points[0], points[1], points[2]);
+        }
+
+        public void SetEdges(Edge a, Edge a1, Edge a2)
+        {
+            Edges[0] = a;
+            if (a.secondPoint.Position == a1.firstPoint.Position)
+            {
+                Edges[1] = a1;
+            }
+            else if (a.secondPoint.Position == a1.secondPoint.Position)
+            {
+                Edges[1] = a1.Reverse();
+            }
+
+            if (a.firstPoint.Position == a1.secondPoint.Position)
+            {
+                Edges[2] = a1;
+            }
+            else if (a.firstPoint.Position == a1.firstPoint.Position)
+            {
+                Edges[2] = a1.Reverse();
+            }
+
+            if (a.secondPoint.Position == a2.firstPoint.Position)
+            {
+                Edges[1] = a2;
+            }
+            else if (a.secondPoint.Position == a2.secondPoint.Position)
+            {
+                Edges[1] = a2.Reverse();
+            }
+
+            if (a.firstPoint.Position == a2.secondPoint.Position)
+            {
+                Edges[2] = a2;
+            }
+            else if (a.firstPoint.Position == a2.firstPoint.Position)
+            {
+                Edges[2] = a2.Reverse();
+            }
         }
     }
 }

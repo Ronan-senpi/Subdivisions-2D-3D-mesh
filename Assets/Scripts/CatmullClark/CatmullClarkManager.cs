@@ -93,7 +93,8 @@ public class CatmullClarkManager : MonoBehaviour
                     }
                 }
 
-                Face newFace = new Face(new List<Edge>(new[] { edge1, edge2, edge3 }));
+                Face newFace = new Face();
+                newFace.SetEdges(edge1, edge2, edge3);
                 newFace.ComputeFacePoint();
 
                 faces.Add(newFace);
@@ -123,34 +124,30 @@ public class CatmullClarkManager : MonoBehaviour
 
             foreach (Face f in faces)
             {
-                for (int i = 0; i < f.Edges.Count; i++)
+                for (int i = 0; i < f.Edges.Length; i++)
                 {
-                    List<Edge> faceCreationEdges = new List<Edge>();
-                    List<Edge> faceCreationEdges2 = new List<Edge>();
-
-                    int nextIndex = i + 1 < f.Edges.Count ? i + 1 : 0;
+                    int nextIndex = i + 1 < f.Edges.Length ? i + 1 : 0;
                     Edge newEdge1 = new Edge(f.FacePoints, f.Edges[i].EdgePoint);
                     Edge newEdge2 = new Edge(f.Edges[i].EdgePoint, f.Edges[nextIndex].EdgePoint);
                     Edge newEdge3 = new Edge(f.Edges[nextIndex].EdgePoint, f.FacePoints);
 
-                    Edge newEdge4 = new Edge(f.Edges[i].EdgePoint, f.Edges[nextIndex].EdgePoint);
-                    Edge newEdge5 = new Edge(f.Edges[nextIndex].EdgePoint, f.Edges[i].secondPoint.VertexPoint);
-                    Edge newEdge6 = new Edge(f.Edges[i].secondPoint.VertexPoint, f.Edges[i].EdgePoint);
-                    faceCreationEdges.Add(newEdge1);
-                    faceCreationEdges.Add(newEdge2);
-                    faceCreationEdges.Add(newEdge3);
+                    Edge newEdge4 = new Edge(f.Edges[nextIndex].EdgePoint, f.Edges[i].EdgePoint);
+                    Edge newEdge5 = new Edge(f.Edges[i].EdgePoint, f.Edges[i].secondPoint.VertexPoint);
+                    Edge newEdge6 = new Edge(f.Edges[i].secondPoint.VertexPoint, f.Edges[nextIndex].EdgePoint);
 
-                    faceCreationEdges2.Add(newEdge4);
-                    faceCreationEdges2.Add(newEdge5);
-                    faceCreationEdges2.Add(newEdge6);
+                    Face catmullFace1 = new Face();
+                    catmullFace1.SetEdges(newEdge1, newEdge2, newEdge3);
+                    Face catmullFace2 = new Face();
+                    catmullFace2.SetEdges(newEdge4, newEdge5, newEdge6);
 
-                    catmullFaces.Add(new Face(faceCreationEdges));
-                    catmullFaces.Add(new Face(faceCreationEdges2));
+                    catmullFaces.Add(catmullFace1);
+                    catmullFaces.Add(catmullFace2);
                 }
             }
 
             List<int> finalIndexes = new List<int>();
             List<Vector3> finalVertices = new List<Vector3>();
+            int countFace = 0;
             foreach (Face f in catmullFaces)
             {
                 (Point, Point, Point) facePoints = f.GetPoints();
@@ -163,9 +160,13 @@ public class CatmullClarkManager : MonoBehaviour
                 if (!finalVertices.Contains(facePoints.Item3.Position))
                     finalVertices.Add(facePoints.Item3.Position);
 
-                finalIndexes.Add(finalVertices.FindIndex(x => x == facePoints.Item1.Position));
-                finalIndexes.Add(finalVertices.FindIndex(x => x == facePoints.Item2.Position));
-                finalIndexes.Add(finalVertices.FindIndex(x => x == facePoints.Item3.Position));
+
+                finalIndexes.Add(finalVertices.IndexOf(facePoints.Item1.Position));
+                finalIndexes.Add(finalVertices.IndexOf(facePoints.Item2.Position));
+                finalIndexes.Add(finalVertices.IndexOf(facePoints.Item3.Position));
+
+
+                countFace++;
             }
 
             Destroy(GetComponent<MeshFilter>());
@@ -173,6 +174,7 @@ public class CatmullClarkManager : MonoBehaviour
             CreateGeometry("Catmull", finalVertices.ToArray(), finalIndexes.ToArray(), meshPosition);
         }
         else
+
         {
             Debug.Log("Missing mesh");
         }
@@ -199,7 +201,7 @@ public class CatmullClarkManager : MonoBehaviour
         kmf.mesh.vertices = verts;
         kmf.mesh.triangles = tris;
 
-        // kmf.mesh.RecalculateNormals();
+        kmf.mesh.RecalculateNormals();
         baseMesh = kmf.mesh;
         return kmf.mesh;
     }
