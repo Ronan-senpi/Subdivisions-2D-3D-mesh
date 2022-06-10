@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Objects;
 using UnityEngine;
 
@@ -30,6 +31,11 @@ namespace Objects
             FacePoints = new Point(centroid /= Edges.Count);
         }
 
+        /// <summary>
+        /// Check if an edge belongs to the face
+        /// </summary>
+        /// <param name="edgeContained">The edge to check</param>
+        /// <returns>True if edge is found, false otherwise</returns>
         public bool Contains(Edge edgeContained)
         {
             foreach (Edge edge in Edges)
@@ -43,11 +49,17 @@ namespace Objects
             return false;
         }
 
+        /// <summary>
+        /// Check if a point belongs to the face
+        /// </summary>
+        /// <param name="pointContained">The point to check</param>
+        /// <returns>True if point is found, false otherwise</returns>
         public bool Contains(Point pointContained)
         {
             foreach (Edge edge in Edges)
             {
-                if (edge.firstPoint.Position == pointContained.Position || edge.secondPoint.Position == pointContained.Position)
+                if (edge.firstPoint.Position == pointContained.Position ||
+                    edge.secondPoint.Position == pointContained.Position)
                 {
                     return true;
                 }
@@ -56,6 +68,11 @@ namespace Objects
             return false;
         }
 
+        /// <summary>
+        /// Compare each points of two faces to determine similitude
+        /// </summary>
+        /// <param name="otherFace"></param>
+        /// <returns>true if both faces are the same, false otherwise</returns>
         public bool CompareFaces(Face otherFace)
         {
             int compareCount = 0;
@@ -77,6 +94,22 @@ namespace Objects
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Return the points forming the face as a tuple
+        /// </summary>
+        public (Point, Point, Point) GetPoints()
+        {
+            List<Point> points = new List<Point>();
+            foreach (Edge e in Edges)
+            {
+                points.Add(e.firstPoint);
+                points.Add(e.secondPoint);
+            }
+
+            points = points.GroupBy(x => x).Select(x => x.First()).ToList();
+            return (points[0], points[1], points[2]);
         }
     }
 }

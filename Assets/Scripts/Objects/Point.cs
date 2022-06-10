@@ -53,10 +53,13 @@ namespace Objects
                 throw new ArgumentException("Object is not a Point");
         }
 
+        /// <summary>
+        /// Calculate perturbation of vertex point
+        /// </summary>
+        /// <param name="faceParents">list of faces connected to point</param>
+        /// <param name="edgeParents">:list of edges connected to point</param>
         public void ComputeVertexPoint(List<Face> faceParents, List<Edge> edgeParents)
         {
-            Debug.Log("Edge count : " + edgeParents.Count);
-            Debug.Log("Face count : " + faceParents.Count);
             Vector3 v = Vector3.zero;
             Vector3 q = Vector3.zero;
             Vector3 r = Vector3.zero;
@@ -75,6 +78,11 @@ namespace Objects
             VertexPoint = new Point(v);
         }
 
+        /// <summary>
+        /// Find faces connected to points
+        /// </summary>
+        /// <param name="faces">List of faces to check</param>
+        /// <returns>List of faces connected</returns>
         public List<Face> BelongsToFaces(List<Face> faces)
         {
             List<Face> belongedFaces = new List<Face>();
@@ -88,7 +96,12 @@ namespace Objects
 
             return belongedFaces;
         }
-
+        
+        /// <summary>
+        /// Find edges connected to points
+        /// </summary>
+        /// <param name="edges">List of edges to check</param>
+        /// <returns>List of edges connected</returns>
         public List<Edge> BelongsToEdges(List<Edge> edges)
         {
             List<Edge> belongedEdges = new List<Edge>();

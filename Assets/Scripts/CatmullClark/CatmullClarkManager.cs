@@ -7,45 +7,37 @@ using Edge = Objects.Edge;
 
 public class CatmullClarkManager : MonoBehaviour
 {
-    [SerializeField] private MeshFilter meshFilter;
-    private Mesh mesh;
+    [SerializeField] private GameObject go;
+    [SerializeField] private Material mat;
+
+    private Mesh baseMesh;
     private bool drawing = false;
     private List<Face> catmullFaces = new List<Face>();
-    public GameObject point;
+    private Vector3 meshPosition = Vector3.zero;
 
-    private void Update()
+    private void Awake()
     {
-        if (drawing)
-        {
-            for (int i = 0; i < catmullFaces.Count; i++)
-            {
-                //(Face f in catmullFaces)
-                for (int j = 0; j < catmullFaces[i].Edges.Count; j++)
-                {
-                    //(Edge e in f.Edges)
-                    Debug.DrawLine(catmullFaces[i].Edges[j].firstPoint.Position,
-                        catmullFaces[i].Edges[j].secondPoint.Position);
-                }
-            }
-        }
+        baseMesh = go.GetComponent<MeshFilter>().mesh;
     }
 
+    /// <summary>
+    /// Subdivide base mesh with Catmull-Clark algorithm
+    /// Save new mesh in base mesh
+    /// </summary>
     public void ApplyCatmullClark()
     {
         catmullFaces.Clear();
-        mesh = meshFilter.mesh;
-
-        if (mesh != null)
+        if (baseMesh != null)
         {
             List<Face> faces = new List<Face>();
             List<Edge> edges = new List<Edge>();
             List<Point> vertices = new List<Point>();
 
-            for (int i = 0; i < mesh.triangles.Length; i += 3)
+            for (int i = 0; i < baseMesh.triangles.Length; i += 3)
             {
-                Point v1 = new Point(mesh.vertices[mesh.triangles[i]]);
-                Point v2 = new Point(mesh.vertices[mesh.triangles[i + 1]]);
-                Point v3 = new Point(mesh.vertices[mesh.triangles[i + 2]]);
+                Point v1 = new Point(baseMesh.vertices[baseMesh.triangles[i]]);
+                Point v2 = new Point(baseMesh.vertices[baseMesh.triangles[i + 1]]);
+                Point v3 = new Point(baseMesh.vertices[baseMesh.triangles[i + 2]]);
 
                 Edge edge1 = new Edge(v1, v2);
                 Edge edge2 = new Edge(v2, v3);
@@ -69,6 +61,7 @@ public class CatmullClarkManager : MonoBehaviour
                         if (v2.Position == v.Position) contains2 = true;
                         if (v3.Position == v.Position) contains3 = true;
                     }
+
                     if (!contains1)
                         vertices.Add(v1);
                     if (!contains2)
@@ -83,6 +76,7 @@ public class CatmullClarkManager : MonoBehaviour
                         if (e.CompareEdge(edge2)) contains2 = true;
                         if (e.CompareEdge(edge3)) contains3 = true;
                     }
+
                     if (!contains1)
                     {
                         edges.Add(edge1);
@@ -126,7 +120,7 @@ public class CatmullClarkManager : MonoBehaviour
                             e.secondPoint.BelongsToEdges(edges));
                 }
             }
-            
+
             foreach (Face f in faces)
             {
                 for (int i = 0; i < f.Edges.Count; i++)
@@ -155,12 +149,58 @@ public class CatmullClarkManager : MonoBehaviour
                 }
             }
 
+            List<int> finalIndexes = new List<int>();
+            List<Vector3> finalVertices = new List<Vector3>();
+            foreach (Face f in catmullFaces)
+            {
+                (Point, Point, Point) facePoints = f.GetPoints();
+                if (!finalVertices.Contains(facePoints.Item1.Position))
+                    finalVertices.Add(facePoints.Item1.Position);
 
-            drawing = true;
+                if (!finalVertices.Contains(facePoints.Item2.Position))
+                    finalVertices.Add(facePoints.Item2.Position);
+
+                if (!finalVertices.Contains(facePoints.Item3.Position))
+                    finalVertices.Add(facePoints.Item3.Position);
+
+                finalIndexes.Add(finalVertices.FindIndex(x => x == facePoints.Item1.Position));
+                finalIndexes.Add(finalVertices.FindIndex(x => x == facePoints.Item2.Position));
+                finalIndexes.Add(finalVertices.FindIndex(x => x == facePoints.Item3.Position));
+            }
+
+            Destroy(GetComponent<MeshFilter>());
+            meshPosition.x += 2;
+            CreateGeometry("Catmull", finalVertices.ToArray(), finalIndexes.ToArray(), meshPosition);
         }
         else
         {
             Debug.Log("Missing mesh");
         }
+    }
+
+
+    /// <summary>
+    /// Create new game object with mesh
+    /// </summary>
+    /// <param name="name">Name of game object</param>
+    /// <param name="verts">List of vertices for mesh</param>
+    /// <param name="tris">List of indexes for mesh</param>
+    /// <param name="pos">transform position for game object</param>
+    /// <returns></returns>
+    private Mesh CreateGeometry(string name, Vector3[] verts, int[] tris, Vector3 pos)
+    {
+        GameObject Kobbelted = new GameObject(name);
+        Kobbelted.transform.position = pos;
+        MeshFilter kmf = Kobbelted.AddComponent<MeshFilter>();
+        MeshRenderer kmr = Kobbelted.AddComponent<MeshRenderer>();
+        kmr.material = mat;
+
+        kmf.mesh.Clear();
+        kmf.mesh.vertices = verts;
+        kmf.mesh.triangles = tris;
+
+        // kmf.mesh.RecalculateNormals();
+        baseMesh = kmf.mesh;
+        return kmf.mesh;
     }
 }
