@@ -14,11 +14,7 @@ public class KobbeltUseMesh : MonoBehaviour
 {
     [SerializeField] private Material mat;
 
-    const float tolerence = 0.001f;
-    private List<Vector3> originalVert;
-
-    private List<int> originalTri;
-
+    const float tolerence = 0.01f;
     List<Vector3> verts = new List<Vector3>();
 
     // Start is called before the first frame update
@@ -26,14 +22,12 @@ public class KobbeltUseMesh : MonoBehaviour
     {
         Mesh mesh = GetComponent<MeshFilter>().sharedMesh;
 
-        originalTri = new List<int>(mesh.triangles);
-        originalVert = new List<Vector3>(mesh.vertices);
         Vector3[] meshVertices = mesh.vertices;
         int[] meshTriangles = mesh.triangles;
         MergeByDistance(ref meshVertices, ref meshTriangles);
 
 
-        Mesh nMesh = CreateGeometry("Kobbelted", meshVertices, meshTriangles, new(0, 1, -1));
+        Mesh nMesh = CreateGeometry("Kobbelted", meshVertices, meshTriangles, new(1000, 1000, -1000));
 
 
         List<int> tris = new List<int>();
@@ -54,15 +48,37 @@ public class KobbeltUseMesh : MonoBehaviour
             int[] neededVert3 = CalculateNeededVertices2(edgesTuple, triT.Item3);
 
             //Index des nouveau vertices
-            int nNdx0 = verts.Count;
-            int nNdx1 = verts.Count + 1;
-            int nNdx2 = verts.Count + 2;
-            int centerId = verts.Count + 3;
+            var vp1 = PerturbVertex(triT.Item1, neededVert1, mesh.vertices);
+            if (!verts.Any(x => (x -vp1).sqrMagnitude <= tolerence))
+            {
+                verts.Add(vp1);
+            }
+            int nNdx0  = verts.FindIndex(x =>  (x -vp1).sqrMagnitude <= tolerence);
+            
+            var vp2 = PerturbVertex(triT.Item2, neededVert2, mesh.vertices);
+            if (!verts.Any(x => (x -vp2).sqrMagnitude <= tolerence))
+            {
+                verts.Add(vp2);
+            }
+            int nNdx1  = verts.FindIndex(x =>  (x -vp2).sqrMagnitude <= tolerence);
 
-            verts.Add(PerturbVertex(triT.Item1, neededVert1, mesh.vertices));
-            verts.Add(PerturbVertex(triT.Item2, neededVert2, mesh.vertices));
-            verts.Add(PerturbVertex(triT.Item3, neededVert3, mesh.vertices));
-            verts.Add(center);
+            var vp3 = PerturbVertex(triT.Item3, neededVert3, mesh.vertices);
+            if (!verts.Any(x => (x -vp3).sqrMagnitude <= tolerence))
+            {
+                verts.Add(vp3);
+            }
+            int nNdx2  = verts.FindIndex(x =>  (x -vp3).sqrMagnitude <= tolerence);
+
+            // verts.Add(PerturbVertex(triT.Item2, neededVert2, mesh.vertices));
+            // verts.Add(PerturbVertex(triT.Item3, neededVert3, mesh.vertices));
+
+            var vpc = center;
+            if (!verts.Any(x => (x -vpc).sqrMagnitude <= tolerence))
+            {
+                verts.Add(vpc);
+            }
+            int centerId  = verts.FindIndex(x =>  (x -vpc).sqrMagnitude <= tolerence);
+            
 
             centerIndexes.Add((centerId, center));
 
@@ -74,21 +90,105 @@ public class KobbeltUseMesh : MonoBehaviour
 
         Vector3[] AVerts = verts.ToArray();
         int[] ATris = tris.ToArray();
-        MergeByDistance(ref AVerts, ref ATris);
-        
-        List<int> centers = new List<int>();
-        foreach (var ci in centerIndexes)
-            for (int i = 0; i < AVerts.Length; i++)
-                if ((ci.Item2 - AVerts[i]).sqrMagnitude <= tolerence)
-                    centers.Add(i);
 
+        CreateGeometry("kobb", AVerts, ATris, new Vector3(0, 0, 2));
         
         trisTuple = TrisToTuple(ATris);
         edgesTuple = TTrisToEdges(trisTuple);
-        
-        
+        for (int i = 0; i < edgesTuple.Count; i++)
+        {
+            var myTris = GetTrisWithEdge(edgesTuple[i], trisTuple);
+            if(myTris.Count == 2)
+                continue;
+            var t1 = myTris[0];
+            var t2 = myTris[1];
+            
+            int it1 = trisTuple.FindIndex(x => x == t1);
+            int it2 = trisTuple.FindIndex(x => x == t2);
+            
+            int vt1 = GetLastPoint(t1, edgesTuple[i]);
+            int vt2 = GetLastPoint(t2, edgesTuple[i]);
+            
+            edgesTuple[i] = new TEdges(vt1, vt2);
+            
+            trisTuple[it1] = new TTri(edgesTuple[i].Item1, vt1, vt2);
+            trisTuple[it2]= new TTri(edgesTuple[i].Item2, vt2, vt1);
+        }
 
-        CreateGeometry("kobbolted2", AVerts, ATris, new(0, -1, -1));
+        tris = new List<int>();
+        foreach (var t in trisTuple)
+        {
+            tris.Add(t.Item1);
+            tris.Add(t.Item1);
+            tris.Add(t.Item1);
+        }
+
+        CreateGeometry("kobbolted2", AVerts, tris.ToArray(), new(0, 0, 4));
+    }
+
+    private void MergeVert(ref Vector3[] verts, ref int[] tris)
+    {
+        List<Vector3> newVerts = new List<Vector3>();
+        for (int i = 0; i < verts.Length; i++)
+        {
+            var v = verts[i];
+            if (!newVerts.Any(x => (x -v).sqrMagnitude <= tolerence))
+            {
+                newVerts.Add(v);
+            }
+        }
+
+        var newVertIndex = verts.Select((vert, index) => new
+        {
+            vert,
+            index
+        });
+        for (int i = 0; i < tris.Length; i++)
+        {
+            var tmpVert = verts[tris[i]];
+            tris[i] = newVertIndex.FirstOrDefault(x => x.vert == tmpVert).index;
+        }
+        
+        // for (int i = 0; i < newVerts.Count; i++)
+        // {
+        //     var semeVert = verts.Select((item, index) => new{
+        //                             vec = item,
+        //                             index}).Where(x => x.vec == newVerts[i]).Select(item =>item.index).ToList();
+        //     foreach (var sv in semeVert)
+        //     {
+        //         tris[sv] = i;
+        //     }
+        // }
+
+        verts = newVerts.ToArray();
+    }
+
+    private int GetLastPoint(TTri t, TEdges edge)
+    {
+        List<int> tList = new List<int> { t.Item1, t.Item2, t.Item3 };
+        tList.Remove(edge.Item1);
+        tList.Remove(edge.Item2);
+        if (tList.Count == 1)
+        {
+            return tList[0];
+        }
+
+        return -1;
+    }
+
+    /// <summary>
+    /// Find all tris with specific vertex in there triangle
+    /// </summary>
+    /// <param name="vert">specific vertex</param>
+    /// <param name="tris">List of triangles</param>
+    /// <param name="triToExclude">if we want exclude a triangle of filtered tris</param>
+    /// <returns>List of filtered tris</returns>
+    private static List<TTri> GetTrisWithEdge(TEdges edge, List<TTri> tris)
+    {
+        List<TTri> filteredTris =
+            tris.FindAll(t => (t.Item1 == edge.Item1 || t.Item2 == edge.Item1 || t.Item3 == edge.Item1) &&
+                              (t.Item1 == edge.Item2 || t.Item2 == edge.Item2 || t.Item3 == edge.Item2));
+        return filteredTris;
     }
 
     private List<TEdges> TTrisToEdges(List<TTri> trisTuple)
@@ -150,13 +250,6 @@ public class KobbeltUseMesh : MonoBehaviour
         return vertices.ToArray();
     }
 
-    private Vector3[] CalculateNeededVertices(int vertIdx, List<TTri> trisTuple, TTri triT, Vector3[] vertices)
-    {
-        List<TTri> connectedTris = GetTrisWith(vertIdx, trisTuple);
-        int[] connectedVerts = TupleToList(connectedTris, toExclude: new[] { vertIdx });
-        return GetVertices(connectedVerts, vertices);
-    }
-
     /// <summary>
     /// Convert array of triangles to tuple of triangles "(0,1,2)"
     /// </summary>
@@ -210,51 +303,8 @@ public class KobbeltUseMesh : MonoBehaviour
         int maxIndex = indices.Max();
         Array.Resize(ref vertices, maxIndex + 1);
     }
-
-
-    /// <summary>
-    /// Find all tris with specific vertex in there triangle
-    /// </summary>
-    /// <param name="vert">specific vertex</param>
-    /// <param name="tris">List of triangles</param>
-    /// <param name="triToExclude">if we want exclude a triangle of filtered tris</param>
-    /// <returns>List of filtered tris</returns>
-    private static List<TTri> GetTrisWith(int vert,
-        List<TTri> tris,
-        TTri triToExclude = null)
-    {
-        List<TTri> filteredTris =
-            tris.FindAll(t => t.Item1 == vert || t.Item2 == vert || t.Item3 == vert);
-        if (triToExclude != null)
-            filteredTris.Remove(triToExclude);
-
-        return filteredTris;
-    }
-
-    /// <summary>
-    /// Convert list of tuple in list of int
-    /// </summary>
-    /// <param name="ts">Tuples</param>
-    /// <param name="toExclude">Value to exclude from the list</param>
-    /// <returns>Filtered list</returns>
-    private static int[] TupleToList(List<TTri> ts, int[] toExclude = null)
-    {
-        List<int> l = new List<int>();
-        foreach (var t in ts)
-        {
-            l.Add(t.Item1);
-            l.Add(t.Item2);
-            l.Add(t.Item3);
-        }
-
-        l = l.GroupBy(x => x).Select(x => x.First()).ToList();
-        if (toExclude != null && toExclude.Length > 0)
-        {
-            l = l.Where(x => !toExclude.Any(ex => ex == x)).ToList();
-        }
-
-        return l.ToArray();
-    }
+    
+    
 
     /// <summary>
     /// Get vertices by indexes 
